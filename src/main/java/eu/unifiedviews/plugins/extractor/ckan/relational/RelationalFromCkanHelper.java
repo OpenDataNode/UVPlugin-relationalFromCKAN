@@ -88,12 +88,16 @@ public class RelationalFromCkanHelper {
     public static Organization getOrganization(CatalogApiConfig apiConfig, String orgId) throws Exception {
         CloseableHttpClient client = HttpClients.createDefault();
         CloseableHttpResponse response = null;
+        Map<String, String> additionalHttpHeaders = apiConfig.getAdditionalHttpHeaders();
         
         try {
             
             URIBuilder uriBuilder = new URIBuilder(apiConfig.getCatalogApiLocation());
             uriBuilder.setPath(uriBuilder.getPath());
             HttpPost httpPost = new HttpPost(uriBuilder.build().normalize());
+            for (Map.Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet()) {
+                httpPost.addHeader(additionalHeader.getKey(), additionalHeader.getValue());
+            }
             httpPost.setConfig(RequestConfig.custom().setConnectTimeout(CONNECT_TIMEOUT).build());
             
             Map<String, Object> values = new HashMap<String, Object>(2);
@@ -132,11 +136,15 @@ public class RelationalFromCkanHelper {
         CloseableHttpClient client = HttpClients.createDefault();
         CloseableHttpResponse response = null;
         FileOutputStream fos = null;
+        Map<String, String> additionalHttpHeaders = apiConfig.getAdditionalHttpHeaders();
         
         try {
             URIBuilder uriBuilder = new URIBuilder(apiConfig.getCatalogApiLocation());
             uriBuilder.setPath(uriBuilder.getPath());
             HttpPost httpPost = new HttpPost(uriBuilder.build().normalize());
+            for (Map.Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet()) {
+                httpPost.addHeader(additionalHeader.getKey(), additionalHeader.getValue());
+            }
             httpPost.setConfig(RequestConfig.custom().setConnectTimeout(CONNECT_TIMEOUT).build());
             
             HttpEntity entity = MultipartEntityBuilder.create()
@@ -181,12 +189,16 @@ public class RelationalFromCkanHelper {
     public static Dataset getDataset(CatalogApiConfig apiConfig, String datasetIdOrName) throws Exception {
         CloseableHttpClient client = HttpClients.createDefault();
         CloseableHttpResponse response = null;
+        Map<String, String> additionalHttpHeaders = apiConfig.getAdditionalHttpHeaders();
         
         try {
             
             URIBuilder uriBuilder = new URIBuilder(apiConfig.getCatalogApiLocation());
             uriBuilder.setPath(uriBuilder.getPath());
             HttpPost httpPost = new HttpPost(uriBuilder.build().normalize());
+            for (Map.Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet()) {
+                httpPost.addHeader(additionalHeader.getKey(), additionalHeader.getValue());
+            }
             httpPost.setConfig(RequestConfig.custom().setConnectTimeout(CONNECT_TIMEOUT).build());
             
             Map<String, Object> values = new HashMap<String, Object>(2);
@@ -221,12 +233,16 @@ public class RelationalFromCkanHelper {
     public static DatastoreSearchResult getDatastoreSearchResult(CatalogApiConfig apiConfig, String resourceId, int limit, int offset) throws Exception {
         CloseableHttpClient client = HttpClients.createDefault();
         CloseableHttpResponse response = null;
+        Map<String, String> additionalHttpHeaders = apiConfig.getAdditionalHttpHeaders();
         
         try {
             
             URIBuilder uriBuilder = new URIBuilder(apiConfig.getCatalogApiLocation());
             uriBuilder.setPath(uriBuilder.getPath());
             HttpPost httpPost = new HttpPost(uriBuilder.build().normalize());
+            for (Map.Entry<String, String> additionalHeader : additionalHttpHeaders.entrySet()) {
+                httpPost.addHeader(additionalHeader.getKey(), additionalHeader.getValue());
+            }
             httpPost.setConfig(RequestConfig.custom().setConnectTimeout(CONNECT_TIMEOUT).build());
             
             JsonBuilderFactory factory = Json.createBuilderFactory(Collections.<String, Object> emptyMap());
