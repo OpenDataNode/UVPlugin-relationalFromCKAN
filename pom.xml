@@ -10,11 +10,11 @@
 		<relativePath></relativePath>
 	</parent>
 	
-	<groupId>eu.unifiedviews.plugins</groupId>
+	<groupId>org.opendatanode.plugins</groupId>
 	<artifactId>uv-e-relationalFromCKAN</artifactId>
 	
 	<name>E-RelationalFromCKAN</name>
-	<version>1.0.0</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<description>Exctractor of CKAN datastore resources</description>
 	<packaging>bundle</packaging>
 
@@ -27,7 +27,7 @@
 	</repositories>
 
 	<properties>
-		<dpu.package>eu.unifiedviews.plugins.extractor.ckan.relational</dpu.package>
+		<dpu.package>org.opendatanode.plugins.extractor.ckan.relational</dpu.package>
 		<dpu.mainClass>RelationalFromCkan</dpu.mainClass>
 	</properties>
 

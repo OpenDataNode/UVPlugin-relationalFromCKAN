@@ -1,4 +1,4 @@
-package eu.unifiedviews.plugins.extractor.ckan.relational;
+package org.opendatanode.plugins.extractor.ckan.relational;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,6 +28,7 @@ import com.vaadin.ui.Button.ClickEvent;
 
 import eu.unifiedviews.dpu.config.DPUConfigException;
 import eu.unifiedviews.helpers.dpu.vaadin.dialog.AbstractDialog;
+import eu.unifiedviews.plugins.extractor.ckan.relational.RelationalFromCkanConfig_V1;
 
 @SuppressWarnings("serial")
 public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFromCkanConfig_V1> {
@@ -82,8 +83,8 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
         userExternalId = this.getContext().getUserExternalId();
         additionalHttpHeaders = new HashMap<>();
         for (Map.Entry<String, String> configEntry : env.entrySet()) {
-            if (configEntry.getKey().startsWith(RelationalFromCkan.CONFIGURATION_DPU_HTTP_HEADER)) {
-                String headerName = configEntry.getKey().replace(RelationalFromCkan.CONFIGURATION_DPU_HTTP_HEADER, "");
+            if (configEntry.getKey().startsWith(RelationalFromCkan.CONFIGURATION_HTTP_HEADER)) {
+                String headerName = configEntry.getKey().replace(RelationalFromCkan.CONFIGURATION_HTTP_HEADER, "");
                 String headerValue = configEntry.getValue();
                 additionalHttpHeaders.put(headerName, headerValue);
             }

@@ -1,4 +1,4 @@
-package eu.unifiedviews.plugins.extractor.ckan.relational;
+package org.opendatanode.plugins.extractor.ckan.relational;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,30 +23,12 @@ import eu.unifiedviews.helpers.dataunit.resource.ResourceHelpers;
 import eu.unifiedviews.helpers.dpu.config.ConfigHistory;
 import eu.unifiedviews.helpers.dpu.context.ContextUtils;
 import eu.unifiedviews.helpers.dpu.exec.AbstractDpu;
-
+import eu.unifiedviews.plugins.extractor.ckan.relational.RelationalFromCkanConfig_V1;
 
 @DPU.AsExtractor
 public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RelationalFromCkan.class);
-
-    /**
-     * @deprecated Global configuration should be used {@link CONFIGURATION_SECRET_TOKEN}
-     */
-    @Deprecated
-    public static final String CONFIGURATION_DPU_SECRET_TOKEN = "dpu.uv-e-filesFromCKAN.secret.token";
-
-    /**
-     * @deprecated Global configuration should be used {@link CONFIGURATION_CATALOG_API_LOCATION}
-     */
-    @Deprecated
-    public static final String CONFIGURATION_DPU_CATALOG_API_LOCATION = "dpu.uv-e-filesFromCKAN.catalog.api.url";
-
-    /**
-     * @deprecated Global configuration should be used {@link CONFIGURATION_HTTP_HEADER}
-     */
-    @Deprecated
-    public static final String CONFIGURATION_DPU_HTTP_HEADER = "dpu.uv-l-filesToCkan.http.header.";
 
     public static final String CONFIGURATION_SECRET_TOKEN = "org.opendatanode.CKAN.secret.token";
 
@@ -63,7 +45,7 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
     public WritableRelationalDataUnit relationalOutput;
 
     private DPUContext context;
-    
+
     public RelationalFromCkan() {
         super(RelationalFromCkanVaadinDialog.class, ConfigHistory.noHistory(RelationalFromCkanConfig_V1.class));
     }
@@ -74,26 +56,18 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
         String shortMessage = this.ctx.tr("dpu.ckan.starting", this.getClass().getSimpleName());
         String longMessage = String.valueOf(this.config);
         this.context.sendMessage(DPUContext.MessageType.INFO, shortMessage, longMessage);
-        
+
         Map<String, String> environment = this.context.getEnvironment();
         final long pipelineId = this.context.getPipelineId();
         final String userId = this.context.getPipelineExecutionOwnerExternalId();
         String token = environment.get(CONFIGURATION_SECRET_TOKEN);
         if (StringUtils.isEmpty(token)) {
-            LOG.debug("Missing global configuration for CKAN secret token, trying to use DPU specific configuration");
-            token = environment.get(CONFIGURATION_DPU_SECRET_TOKEN);
-            if (StringUtils.isEmpty(token)) {
-                throw ContextUtils.dpuException(this.ctx, "errors.token.missing");
-            }
+            throw ContextUtils.dpuException(this.ctx, "errors.token.missing");
         }
-        
+
         String catalogApiLocation = environment.get(CONFIGURATION_CATALOG_API_LOCATION);
         if (StringUtils.isEmpty(catalogApiLocation)) {
-            LOG.debug("Missing global configuration for CKAN API location, trying to use DPU specific configuration");
-            catalogApiLocation = environment.get(CONFIGURATION_DPU_CATALOG_API_LOCATION);
-            if (StringUtils.isEmpty(catalogApiLocation)) {
-                throw ContextUtils.dpuException(this.ctx, "errors.api.missing");
-            }
+            throw ContextUtils.dpuException(this.ctx, "errors.api.missing");
         }
 
         Map<String, String> additionalHttpHeaders = new HashMap<>();
@@ -104,31 +78,21 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
                 additionalHttpHeaders.put(headerName, headerValue);
             }
         }
-        if (additionalHttpHeaders.isEmpty()) {
-            LOG.debug("Missing global configuration for additional HTTP headers, trying to use DPU specific configuration");
-            for (Map.Entry<String, String> configEntry : environment.entrySet()) {
-                if (configEntry.getKey().startsWith(CONFIGURATION_DPU_HTTP_HEADER)) {
-                    String headerName = configEntry.getKey().replace(CONFIGURATION_DPU_HTTP_HEADER, "");
-                    String headerValue = configEntry.getValue();
-                    additionalHttpHeaders.put(headerName, headerValue);
-                }
-            }
-        }
-        
+
         CatalogApiConfig apiConfig = new CatalogApiConfig(catalogApiLocation, pipelineId, userId, token, additionalHttpHeaders);
-        
+
         if (ctx.canceled()) {
             throw ContextUtils.dpuExceptionCancelled(ctx);
         }
-        
+
         final String packageId = config.getPackageId();
         final String resourceId = config.getResourceId();
-        
+
         try {
             LOG.debug("Processing CKAN resource with id {} from package / dataset with id {}", resourceId, packageId);
             // create table from user config
             DatastoreSearchResult tableMetadata = RelationalFromCkanHelper.getDatastoreSearchResult(apiConfig, resourceId, 0, 0);
-            
+
             String createTableQuery = prepareCreateTableQuery(config, tableMetadata);
             LOG.debug("Table create query: {}", createTableQuery);
             ContextUtils.sendMessage(ctx, DPUContext.MessageType.DEBUG, ctx.tr("dpu.create.new.table"), createTableQuery);
@@ -167,22 +131,22 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
             this.context.sendMessage(MessageType.ERROR, errMsg, e.getMessage());
         }
     }
-    
+
     protected static String prepareInsertIntoQuery(RelationalFromCkanConfig_V1 config, DatastoreSearchResult result) {
         StringBuilder sb = new StringBuilder();
-        
+
         List<String> columnNames = result.getFieldList();
         List<String> values = new ArrayList<String>(result.records.size());
         for (Record r : result.records) {
             values.add(r.getSqlInsertValues(columnNames, config.isColumnsAsString()));
         }
-        
+
         sb.append(String.format("INSERT INTO %s VALUES\n%s",
                 config.getTableName(),
                 StringUtils.join(values, ",\n")));
-        
+
         sb.append(";");
-        
+
         return sb.toString();
     }
 
