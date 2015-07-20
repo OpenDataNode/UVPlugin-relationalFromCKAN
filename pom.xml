@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>eu.unifiedviews</groupId>
 		<artifactId>uv-pom-dpu</artifactId>
-		<version>2.1.0</version>
+		<version>2.1.1-SNAPSHOT</version>
 		<relativePath></relativePath>
 	</parent>
 	
@@ -14,7 +14,7 @@
 	<artifactId>uv-e-relationalFromCKAN</artifactId>
 	
 	<name>E-RelationalFromCKAN</name>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<description>Exctractor of CKAN datastore resources</description>
 	<packaging>bundle</packaging>
 
