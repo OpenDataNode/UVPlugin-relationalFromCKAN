@@ -19,8 +19,8 @@
 
 |Parameter                        |Description                             |                                                        
 |---------------------------------|----------------------------------------|
-|dpu.uv-e-relationalFromCKAN.secret.token |authentication token |
-|dpu.uv-e-relationalFromCKAN.catalog.api.url |URL to CKAN API internal_api, e.g. http://host/api/action/internal_api  |
+|org.opendatanode.CKAN.secret.token  |authentication token |
+|org.opendatanode.CKAN.api.url       |URL to CKAN API internal_api, e.g. http://host/api/action/internal_api  |
 
 ***
 

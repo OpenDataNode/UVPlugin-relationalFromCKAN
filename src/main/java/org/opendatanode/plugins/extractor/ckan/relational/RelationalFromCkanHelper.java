@@ -1,4 +1,4 @@
-package eu.unifiedviews.plugins.extractor.ckan.relational;
+package org.opendatanode.plugins.extractor.ckan.relational;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

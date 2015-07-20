@@ -1,4 +1,4 @@
-package eu.unifiedviews.plugins.extractor.ckan.relational;
+package org.opendatanode.plugins.extractor.ckan.relational;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,6 +22,7 @@ import eu.unifiedviews.helpers.dataunit.resource.ResourceHelpers;
 import eu.unifiedviews.helpers.dpu.config.ConfigHistory;
 import eu.unifiedviews.helpers.dpu.context.ContextUtils;
 import eu.unifiedviews.helpers.dpu.exec.AbstractDpu;
+import eu.unifiedviews.plugins.extractor.ckan.relational.RelationalFromCkanConfig_V1;
 
 
 @DPU.AsExtractor
@@ -29,9 +30,11 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
 
     private static final Logger LOG = LoggerFactory.getLogger(RelationalFromCkan.class);
 
-    public static final String CONFIGURATION_SECRET_TOKEN = "dpu.uv-e-relationalFromCKAN.secret.token";
-    public static final String CONFIGURATION_CATALOG_API_LOCATION = "dpu.uv-e-relationalFromCKAN.catalog.api.url";
-    
+    public static final String CONFIGURATION_SECRET_TOKEN = "org.opendatanode.CKAN.secret.token";
+
+    public static final String CONFIGURATION_CATALOG_API_LOCATION = "org.opendatanode.CKAN.api.url";
+
+    public static final String CONFIGURATION_HTTP_HEADER = "org.opendatanode.CKAN.http.header.[key]";
     /**
      * Requesting rows in chunks
      */
@@ -59,6 +62,7 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
         final String token = environment.get(CONFIGURATION_SECRET_TOKEN);
         final String catalogApiLocation = environment.get(CONFIGURATION_CATALOG_API_LOCATION);
         
+
         if (token == null || token.isEmpty()) {
             throw ContextUtils.dpuException(this.ctx, "errors.token.missing");
         }
