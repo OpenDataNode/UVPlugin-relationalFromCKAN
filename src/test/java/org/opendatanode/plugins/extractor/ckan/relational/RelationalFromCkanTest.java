@@ -21,7 +21,6 @@ import org.opendatanode.plugins.extractor.ckan.relational.RelationalFromCkan;
 
 import cz.cuni.mff.xrg.odcs.dpu.test.TestEnvironment;
 import eu.unifiedviews.dataunit.relational.WritableRelationalDataUnit;
-import eu.unifiedviews.plugins.extractor.ckan.relational.RelationalFromCkanConfig_V1;
 
 public class RelationalFromCkanTest {
     

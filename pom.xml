@@ -18,14 +18,6 @@
 	<description>Exctractor of CKAN datastore resources</description>
 	<packaging>bundle</packaging>
 
-	<repositories>
-		<repository>
-			<id>maven.eea.sk</id>
-			<name>maven.eea.sk-public</name>
-			<url>http://maven.eea.sk/artifactory/public/</url>
-		</repository>
-	</repositories>
-
 	<properties>
 		<dpu.package>org.opendatanode.plugins.extractor.ckan.relational</dpu.package>
 		<dpu.mainClass>RelationalFromCkan</dpu.mainClass>
@@ -95,4 +87,12 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<repositories>
+		<repository>
+			<id>maven.eea.sk</id>
+			<name>maven.eea.sk-public</name>
+			<url>http://maven.eea.sk/artifactory/public/</url>
+		</repository>
+	</repositories>
+
 </project>

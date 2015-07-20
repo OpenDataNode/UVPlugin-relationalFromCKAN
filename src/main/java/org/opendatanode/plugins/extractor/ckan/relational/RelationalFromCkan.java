@@ -2,6 +2,7 @@ package org.opendatanode.plugins.extractor.ckan.relational;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -22,8 +23,6 @@ import eu.unifiedviews.helpers.dataunit.resource.ResourceHelpers;
 import eu.unifiedviews.helpers.dpu.config.ConfigHistory;
 import eu.unifiedviews.helpers.dpu.context.ContextUtils;
 import eu.unifiedviews.helpers.dpu.exec.AbstractDpu;
-import eu.unifiedviews.plugins.extractor.ckan.relational.RelationalFromCkanConfig_V1;
-
 
 @DPU.AsExtractor
 public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1> {
@@ -34,7 +33,8 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
 
     public static final String CONFIGURATION_CATALOG_API_LOCATION = "org.opendatanode.CKAN.api.url";
 
-    public static final String CONFIGURATION_HTTP_HEADER = "org.opendatanode.CKAN.http.header.[key]";
+    public static final String CONFIGURATION_HTTP_HEADER = "org.opendatanode.CKAN.http.header.";
+
     /**
      * Requesting rows in chunks
      */
@@ -44,7 +44,7 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
     public WritableRelationalDataUnit relationalOutput;
 
     private DPUContext context;
-    
+
     public RelationalFromCkan() {
         super(RelationalFromCkanVaadinDialog.class, ConfigHistory.noHistory(RelationalFromCkanConfig_V1.class));
     }
@@ -55,36 +55,43 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
         String shortMessage = this.ctx.tr("dpu.ckan.starting", this.getClass().getSimpleName());
         String longMessage = String.valueOf(this.config);
         this.context.sendMessage(DPUContext.MessageType.INFO, shortMessage, longMessage);
-        
+
         Map<String, String> environment = this.context.getEnvironment();
         final long pipelineId = this.context.getPipelineId();
         final String userId = this.context.getPipelineExecutionOwnerExternalId();
-        final String token = environment.get(CONFIGURATION_SECRET_TOKEN);
-        final String catalogApiLocation = environment.get(CONFIGURATION_CATALOG_API_LOCATION);
-        
-
-        if (token == null || token.isEmpty()) {
+        String token = environment.get(CONFIGURATION_SECRET_TOKEN);
+        if (StringUtils.isEmpty(token)) {
             throw ContextUtils.dpuException(this.ctx, "errors.token.missing");
         }
-        
-        if (catalogApiLocation == null || catalogApiLocation.isEmpty()) {
+
+        String catalogApiLocation = environment.get(CONFIGURATION_CATALOG_API_LOCATION);
+        if (StringUtils.isEmpty(catalogApiLocation)) {
             throw ContextUtils.dpuException(this.ctx, "errors.api.missing");
         }
-        
-        CatalogApiConfig apiConfig = new CatalogApiConfig(catalogApiLocation, pipelineId, userId, token);
-        
+
+        Map<String, String> additionalHttpHeaders = new HashMap<>();
+        for (Map.Entry<String, String> configEntry : environment.entrySet()) {
+            if (configEntry.getKey().startsWith(CONFIGURATION_HTTP_HEADER)) {
+                String headerName = configEntry.getKey().replace(CONFIGURATION_HTTP_HEADER, "");
+                String headerValue = configEntry.getValue();
+                additionalHttpHeaders.put(headerName, headerValue);
+            }
+        }
+
+        CatalogApiConfig apiConfig = new CatalogApiConfig(catalogApiLocation, pipelineId, userId, token, additionalHttpHeaders);
+
         if (ctx.canceled()) {
             throw ContextUtils.dpuExceptionCancelled(ctx);
         }
-        
+
         final String packageId = config.getPackageId();
         final String resourceId = config.getResourceId();
-        
+
         try {
             LOG.debug("Processing CKAN resource with id {} from package / dataset with id {}", resourceId, packageId);
             // create table from user config
             DatastoreSearchResult tableMetadata = RelationalFromCkanHelper.getDatastoreSearchResult(apiConfig, resourceId, 0, 0);
-            
+
             String createTableQuery = prepareCreateTableQuery(config, tableMetadata);
             LOG.debug("Table create query: {}", createTableQuery);
             ContextUtils.sendMessage(ctx, DPUContext.MessageType.DEBUG, ctx.tr("dpu.create.new.table"), createTableQuery);
@@ -123,22 +130,22 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
             this.context.sendMessage(MessageType.ERROR, errMsg, e.getMessage());
         }
     }
-    
+
     protected static String prepareInsertIntoQuery(RelationalFromCkanConfig_V1 config, DatastoreSearchResult result) {
         StringBuilder sb = new StringBuilder();
-        
+
         List<String> columnNames = result.getFieldList();
         List<String> values = new ArrayList<String>(result.records.size());
         for (Record r : result.records) {
             values.add(r.getSqlInsertValues(columnNames, config.isColumnsAsString()));
         }
-        
+
         sb.append(String.format("INSERT INTO %s VALUES\n%s",
                 config.getTableName(),
                 StringUtils.join(values, ",\n")));
-        
+
         sb.append(";");
-        
+
         return sb.toString();
     }
 
@@ -156,5 +163,4 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
         sb.append(");");
         return sb.toString();
     }
-
 }
