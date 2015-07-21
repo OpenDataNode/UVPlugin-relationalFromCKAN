@@ -19,8 +19,9 @@
 
 |Parameter                        |Description                             |                                                        
 |---------------------------------|----------------------------------------|
-|org.opendatanode.CKAN.secret.token  |authentication token |
-|org.opendatanode.CKAN.api.url       |URL to CKAN API internal_api, e.g. http://host/api/action/internal_api  |
+|org.opendatanode.CKAN.secret.token |Token used to authenticate to CKAN, has to be set in frontend.properties and backend.properties |
+|org.opendatanode.CKAN.api.url      |URL to CKAN API internal_api, e.g. http://{host}/api/action/internal_api, has to be set in frontend.properties and backend.properties  |
+|org.opendatanode.CKAN.http.header.[key] | Custom HTTP header added to requests on CKAN |
 
 ***
 
@@ -37,7 +38,10 @@
 
 |Version            |Release notes                                   |
 |-------------------|------------------------------------------------|
-|1.0.0              |N/A                                             |                                
+|1.0.0              |N/A                                             |
+|1.0.1              |changed configuration parameter names and added one for http headers |
+|1.1.0              |GUI changes, added new checkbox for showing only 'my' (organization) datasets, i18n update|
+|                   |fixed bug: after selecting resource, it was not selected in tree after reopening config dialog|
 
 
 ***
@@ -46,6 +50,5 @@
 
 |Author            |Notes                 |
 |------------------|----------------------|
-|mvi               |The configuration parameters are needed in both frontend and backend configuration files. |
-|mvi               |dependent on ckanext-odn-pipeline branch feature/edem|  
+|mvi               |dependent on ckanext-odn-pipeline v0.5.1+| 
 

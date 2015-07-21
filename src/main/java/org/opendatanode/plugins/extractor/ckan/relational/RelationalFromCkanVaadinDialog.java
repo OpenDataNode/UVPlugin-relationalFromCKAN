@@ -29,8 +29,9 @@ import com.vaadin.ui.Button.ClickEvent;
 import eu.unifiedviews.dpu.config.DPUConfigException;
 import eu.unifiedviews.helpers.dpu.vaadin.dialog.AbstractDialog;
 
+
 @SuppressWarnings("serial")
-public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFromCkanConfig_V1> {
+public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFromCkanConfig_V2> {
     
     private static final Logger LOG = LoggerFactory.getLogger(RelationalFromCkanVaadinDialog.class);
 
@@ -42,38 +43,33 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
     
     final private ObjectProperty<Boolean> columnsAsString = new ObjectProperty<Boolean>(false);
     
+    final private ObjectProperty<Boolean> showOnlyMyDatasets = new ObjectProperty<Boolean>(true);
+    private CheckBox showOnlyMyOwnDatasetCheckbox; // needing this too for enabling/disabling
+    
     private Tree datasetResourceTree;
 
-    private TextArea logs;
-
-    private Label loadingLabel = null;
+    private ProgressBar loadingBar = null;
     
     private String apiUrl = null;
     private String token = null;
     private String userExternalId = null;
 
     private Map<String, String> additionalHttpHeaders = null;
+
+    private Set<String> datastoreResourceIds;
+    private Organization myOrg;
+    private List<Dataset> publicDatasets;
+
+    private boolean triedLoadingOrg = false;
     
+    private Label errorLabel;
+
+    private Label catalogErrorLabel;
+
     public RelationalFromCkanVaadinDialog() {
         super(RelationalFromCkan.class);
     }
     
-    private void addLine(final TextArea logs, String line, String line2) {
-        String oldValue = logs.getValue();
-        if (oldValue == null || oldValue.isEmpty()) {
-            logs.setValue(line);
-        } else {
-            logs.setValue(logs.getValue() + "\n" + line);
-        }
-        
-        if (line2 != null && !line2.isEmpty()) {
-            logs.setValue(logs.getValue() + "\nError: " + line2);
-        }
-        
-        // scroll to end
-        logs.setCursorPosition(logs.getValue().length());
-    }
-
     @Override
     protected void buildDialogLayout() {
         Map<String, String> env = this.getContext().getEnvironment();
@@ -99,14 +95,24 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
         
         mainLayout.setWidth(100, Unit.PERCENTAGE);
 
-        logs = new TextArea(ctx.tr("CkanVaadinDialog.logs.label"));
-        logs.setValue("");
-        logs.setWidth(COMPONENT_WIDTH_PERCENTAGE, Unit.PERCENTAGE);
-        logs.setHeight(100, Unit.PIXELS);
-        logs.setEnabled(false);
-        
         final Label horrizontalLine = new Label("<hr/>", ContentMode.HTML);
         horrizontalLine.setWidth(COMPONENT_WIDTH_PERCENTAGE, Unit.PERCENTAGE);
+        
+        showOnlyMyOwnDatasetCheckbox = 
+                new CheckBox(ctx.tr("CkanVaadinDialog.show.my.datasets.label"), showOnlyMyDatasets);
+        showOnlyMyOwnDatasetCheckbox.addValueChangeListener(new ValueChangeListener() {
+            @Override
+            public void valueChange(ValueChangeEvent event) {
+                // fill the tree
+                datasetResourceTree.removeAllItems();
+                
+                loadingBar.setVisible(true);
+                showOnlyMyOwnDatasetCheckbox.setEnabled(false);
+
+                final LoadThread thread = new LoadThread();
+                thread.start();
+            }
+        });
         
         TextField tableNameTextField = new TextField(ctx.tr("CkanVaadinDialog.tablename.label"), tableName);
         tableNameTextField.setImmediate(true);
@@ -121,9 +127,11 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
         buttonsLayout.setMargin(new MarginInfo(true, false, true, false));
         buttonsLayout.setWidth(250, Unit.PIXELS);
         
-        loadingLabel = new Label(ctx.tr("CkanVaadinDialog.tree.loading.label"));
+        loadingBar = new ProgressBar();
+        loadingBar.setIndeterminate(true);
         
-        final TextField filterField = new TextField(ctx.tr("CkanVaadinDialog.filter.label"));
+        final TextField filterField = new TextField();
+        filterField.setInputPrompt(ctx.tr("CkanVaadinDialog.filter.tooltip"));
         filterField.setWidth(COMPONENT_WIDTH_PERCENTAGE, Unit.PERCENTAGE);
         datasetResourceTree = new Tree(ctx.tr("CkanVaadinDialog.tree.label"));
         // setting up for filtering
@@ -201,7 +209,7 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
                     
                     if (item instanceof Resource) {
                         resource = (Resource) item;
-                        addLine(logs, ctx.tr("CkanVaadinDialog.logs.item.selection.changed") + resource, null);
+                        errorLabel.setVisible(false);
                     }
                 }
             }
@@ -229,32 +237,45 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
         
         CheckBox columnsAsStringCheckBox = new CheckBox(ctx.tr("CkanVaadinDialog.columns.as.strings"), columnsAsString);
         
+        errorLabel = new Label();
+        errorLabel.setVisible(false);
+        errorLabel.setStyleName("dpu-error-label");
+        
+        catalogErrorLabel = new Label("", ContentMode.HTML);
+        errorLabel.setVisible(false);
+        catalogErrorLabel.setStyleName("dpu-error-label");
+        
         buttonsLayout.addComponent(expandAllButton);
         buttonsLayout.addComponent(collapseAllButton);
+        mainLayout.addComponent(catalogErrorLabel);
+        mainLayout.addComponent(errorLabel);
+        mainLayout.addComponent(showOnlyMyOwnDatasetCheckbox);
         mainLayout.addComponent(columnsAsStringCheckBox);
-        mainLayout.addComponent(tableNameTextField);
         mainLayout.addComponent(buttonsLayout);
         mainLayout.addComponent(filterField);
         mainLayout.addComponent(datasetResourceTree);
-        mainLayout.addComponent(loadingLabel);
+        mainLayout.addComponent(loadingBar);
+        mainLayout.addComponent(tableNameTextField);
         mainLayout.addComponent(horrizontalLine);
-        mainLayout.addComponent(logs);
         setCompositionRoot(mainLayout);
     }
 
     private void setPreviouslySelectedResource() {
         if (resource == null) {
+            errorLabel.setValue(ctx.tr("errors.resource.not.selected"));
+            errorLabel.setVisible(true);
             return;
-        }
+        } 
         
-        Item resItem = datasetResourceTree.getItem(resource);
-        
-        if (resItem == null) {
+        datasetResourceTree.setValue(resource);
+
+        if (datasetResourceTree.getValue() == null) {
+            errorLabel.setValue(ctx.tr("errors.resource.selected.but.not.found"));
+            errorLabel.setVisible(true);
             return;
+        } else {
+            errorLabel.setVisible(false);
         }
-        
-        datasetResourceTree.setValue(resItem);
-        addLine(logs, ctx.tr("CkanVaadinDialog.selected.item.log", resItem.toString()), null);
         
         Object datasetItemId = datasetResourceTree.getParent(resource);
         datasetResourceTree.expandItem(datasetItemId);
@@ -267,18 +288,29 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
     
     private CatalogApiConfig getApiConfig() {
         CatalogApiConfig apiConfig = new CatalogApiConfig(apiUrl, -1, userExternalId, token, additionalHttpHeaders);
+        catalogErrorLabel.setVisible(!catalogErrorLabel.getValue().isEmpty());
         
         if (apiUrl == null || apiUrl.isEmpty()) {
-            addLine(logs, ctx.tr("errors.api.missing", userExternalId), null);
+            addLineToCatalogErrorLabel(ctx.tr("errors.api.missing", userExternalId));
             return null;
         }
         
         if (token == null || token.isEmpty()) {
-            addLine(logs, ctx.tr("errors.token.missing", userExternalId), null);
+            addLineToCatalogErrorLabel(ctx.tr("errors.token.missing", userExternalId));
             return null;
         }
         
         return apiConfig;
+    }
+    
+    private void addLineToCatalogErrorLabel(String line) {
+        String prevValue = catalogErrorLabel.getValue();
+        if (prevValue.isEmpty()) {
+            catalogErrorLabel.setValue(line);
+        } else if (!prevValue.contains(line)) {
+            catalogErrorLabel.setValue(prevValue + "<br/>" + line);
+        }
+        catalogErrorLabel.setVisible(true);
     }
     
     private List<Dataset> getPackages(CatalogApiConfig apiConfig) {
@@ -287,11 +319,11 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
         }
         
         try {
-            return RelationalFromCkanHelper.getPackageListWithResources(apiConfig);
+            return new RelationalFromCkanHelper(ctx).getPackageListWithResources(apiConfig);
         } catch (Exception e) {
             String errMsg = ctx.tr("errors.failed.retrieve.datasets");
             LOG.error(errMsg, e);
-            addLine(logs, errMsg, e.getMessage());
+            addLineToCatalogErrorLabel(errMsg + " " + e.getMessage());
             return null;
         }
     }
@@ -302,11 +334,11 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
         }
         
         try {
-            return RelationalFromCkanHelper.getOrganization(apiConfig, userExternalId);
+            return new RelationalFromCkanHelper(ctx).getOrganization(apiConfig, userExternalId);
         } catch (Exception e) {
             String errMsg = ctx.tr("errors.failed.retrieve.org.datasets", userExternalId);
             LOG.warn(errMsg + ": " + e.getMessage());
-            addLine(logs, errMsg, e.getMessage());
+            addLineToCatalogErrorLabel(errMsg + " " + e.getMessage());
             return null;
         }
     }
@@ -317,30 +349,54 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
         }
         
         try {
-            return RelationalFromCkanHelper.getDatastoreResourceIds(apiConfig);
+            return new RelationalFromCkanHelper(ctx).getDatastoreResourceIds(apiConfig);
         } catch (Exception e) {
             String errMsg = ctx.tr("errors.failed.retrieve.datastore.resource.id.list", userExternalId);
             LOG.warn(errMsg + ": " + e.getMessage());
-            addLine(logs, errMsg, e.getMessage());
+            addLineToCatalogErrorLabel(errMsg + " " + e.getMessage());
             return Collections.emptySet();
         }
     }
 
     private void fillTree() {
-        // config information
-        CatalogApiConfig apiConfig = getApiConfig();
-        List<Dataset> packages = getPackages(apiConfig);
-        Organization myOrg = getLoggedUserOrganization(apiConfig);
-        Set<String> datastoreResourceIds = getDatastoreResourceIds(apiConfig);
         
+        addMyOrgDatasets();
+        if (!showOnlyMyDatasets.getValue()) {
+            addPublicDatasets();
+        }
+    }
+
+    private void loadData() {
+        if (myOrg == null && !triedLoadingOrg ) {
+            load(DatasetType.MY_ORGS);
+            triedLoadingOrg = true;
+        }
+        if (publicDatasets == null && !showOnlyMyDatasets.getValue()) {
+            load(DatasetType.ALL_PUBLIC);
+        }
+    }    
+    
+    /**
+     * Contacts catalog for datasets
+     * 
+     * @param type
+     */
+    private void load(final DatasetType type) {
+        final CatalogApiConfig apiConfig = getApiConfig();
+        datastoreResourceIds = getDatastoreResourceIds(apiConfig);
+        if (type == DatasetType.MY_ORGS) {
+            myOrg = getLoggedUserOrganization(apiConfig);
+        } else {
+            publicDatasets = getPackages(apiConfig);
+        }
+    }
+    
+    /**
+     *  adds private and public datasets of my organization
+     */
+    private void addMyOrgDatasets() {
         
-        // fill the tree
-        datasetResourceTree.removeAllItems();
-        
-        // add private datasets of my organization
-        String exludeOrg = null;
         if (myOrg != null) {
-            exludeOrg = myOrg.id;
             for (Dataset dataset : myOrg.datasets) {
                 List<Resource> datastoreResources = dataset.getDatastoreResources(datastoreResourceIds);
                 if (datastoreResources.isEmpty()) {
@@ -353,13 +409,20 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
                 }
             }
         }
+    }
+    
+    /**
+     * Adds all public dataset excluding myOrg datasets,
+     * because they should be already loaded
+     */
+    private void addPublicDatasets() {
         
-        if (packages == null) {
+        if (publicDatasets == null) {
             return;
         }
         
-        // add public datasets with datastore resources only
-        for (Dataset dataset : packages) {
+        String exludeOrg = myOrg == null ? null : myOrg.id;
+        for (Dataset dataset : publicDatasets) {
             if ((dataset.org != null && exludeOrg == dataset.org.id)
                     || datasetResourceTree.getItem(dataset) != null) {
                 continue; // skip my org's datasets (already added)
@@ -411,21 +474,27 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
     }
 
     @Override
-    protected RelationalFromCkanConfig_V1 getConfiguration() throws DPUConfigException {
-        RelationalFromCkanConfig_V1 result = new RelationalFromCkanConfig_V1();
+    protected RelationalFromCkanConfig_V2 getConfiguration() throws DPUConfigException {
+        RelationalFromCkanConfig_V2 result = new RelationalFromCkanConfig_V2();
         if (resource != null) {
             result.setPackageId(resource.packageId);
             result.setResourceId(resource.id);
         }
         
-        result.setTableName(tableName.getValue());
+        String tName = tableName.getValue().trim();
+        if (!tName.isEmpty() && !isValidDbTableName(tName)) {
+            throw new DPUConfigException(ctx.tr("error.table.name.not.valid"));
+        }
+        
+        result.setTableName(tName);
         result.setColumnsAsString(columnsAsString.getValue());
+        result.setShowOnlyMyOrgDatasets(showOnlyMyDatasets.getValue());
         
         return result;
     }
 
     @Override
-    protected void setConfiguration(RelationalFromCkanConfig_V1 config) throws DPUConfigException {
+    protected void setConfiguration(RelationalFromCkanConfig_V2 config) throws DPUConfigException {
         
         if (config.getResourceId() != null && !config.getResourceId().isEmpty()) {
             resource = new Resource(config.getResourceId(), config.getPackageId());
@@ -433,17 +502,33 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
         
         tableName.setValue(config.getTableName() == null ? "" : config.getTableName());
         columnsAsString.setValue(config.isColumnsAsString());
-        
-        new Thread(new Runnable() {
-            
-            @Override
-            public void run() {
-                fillTree();
-                setPreviouslySelectedResource();
-                datasetResourceTree.markAsDirty(); // repaint tree
-                loadingLabel.setVisible(false);
-            }
-        }).start();
+        // this triggers listener -> the tree loads
+        showOnlyMyDatasets.setValue(config.isShowOnlyMyOrgDatasets());
+    }
+    
+    private static boolean isValidDbTableName(String fileName) {
+        return fileName.matches("[a-zA-Z_]+");
     }
 
+    private class LoadThread extends Thread {
+        
+        @Override
+        public void run() {
+            loadData();
+            
+            // Update the UI thread-safely
+            UI.getCurrent().access(new Runnable() {
+                @Override
+                public void run() {
+                    
+                    fillTree();
+                    setPreviouslySelectedResource();
+                    
+                    loadingBar.setVisible(false);
+                    showOnlyMyOwnDatasetCheckbox.setEnabled(true);
+                    
+                }
+            });
+        }
+    }
 }

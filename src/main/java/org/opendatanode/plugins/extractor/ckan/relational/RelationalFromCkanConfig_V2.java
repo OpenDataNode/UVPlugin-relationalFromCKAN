@@ -6,7 +6,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import eu.unifiedviews.dpu.config.DPUConfigException;
 import eu.unifiedviews.helpers.dpu.config.VersionedConfig;
 
-public class RelationalFromCkanConfig_V1 implements VersionedConfig<RelationalFromCkanConfig_V2> {
+public class RelationalFromCkanConfig_V2 implements VersionedConfig<RelationalFromCkanConfig_V2> {
     
     private String tableName;
     
@@ -15,8 +15,10 @@ public class RelationalFromCkanConfig_V1 implements VersionedConfig<RelationalFr
     private String resourceId;
     
     private boolean columnsAsString;
+    
+    private boolean showOnlyMyOrgDatasets = true;
 
-    public RelationalFromCkanConfig_V1() {
+    public RelationalFromCkanConfig_V2() {
     }
     
     public String getTableName() {
@@ -50,6 +52,14 @@ public class RelationalFromCkanConfig_V1 implements VersionedConfig<RelationalFr
     public void setColumnsAsString(boolean columnsAsString) {
         this.columnsAsString = columnsAsString;
     }
+    
+    public boolean isShowOnlyMyOrgDatasets() {
+        return showOnlyMyOrgDatasets;
+    }
+
+    public void setShowOnlyMyOrgDatasets(boolean showOnlyMyOrgDatasets) {
+        this.showOnlyMyOrgDatasets = showOnlyMyOrgDatasets;
+    }
 
     @Override
     public String toString() {
@@ -58,12 +68,6 @@ public class RelationalFromCkanConfig_V1 implements VersionedConfig<RelationalFr
 
     @Override
     public RelationalFromCkanConfig_V2 toNextVersion() throws DPUConfigException {
-        RelationalFromCkanConfig_V2 v2 = new RelationalFromCkanConfig_V2();
-        v2.setColumnsAsString(columnsAsString);
-        v2.setPackageId(packageId);
-        v2.setResourceId(resourceId);
-        v2.setShowOnlyMyOrgDatasets(true);
-        v2.setTableName(tableName);
-        return v2;
+        return this;
     }
 }

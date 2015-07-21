@@ -25,7 +25,7 @@ import eu.unifiedviews.helpers.dpu.context.ContextUtils;
 import eu.unifiedviews.helpers.dpu.exec.AbstractDpu;
 
 @DPU.AsExtractor
-public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1> {
+public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V2> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RelationalFromCkan.class);
 
@@ -46,7 +46,10 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
     private DPUContext context;
 
     public RelationalFromCkan() {
-        super(RelationalFromCkanVaadinDialog.class, ConfigHistory.noHistory(RelationalFromCkanConfig_V1.class));
+        super(RelationalFromCkanVaadinDialog.class,
+                ConfigHistory.history(RelationalFromCkanConfig_V2.class)
+                    .alternative(RelationalFromCkanConfig_V1.class)
+                    .addCurrent(RelationalFromCkanConfig_V2.class));
     }
 
     @Override
@@ -90,7 +93,7 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
         try {
             LOG.debug("Processing CKAN resource with id {} from package / dataset with id {}", resourceId, packageId);
             // create table from user config
-            DatastoreSearchResult tableMetadata = RelationalFromCkanHelper.getDatastoreSearchResult(apiConfig, resourceId, 0, 0);
+            DatastoreSearchResult tableMetadata = new RelationalFromCkanHelper(ctx).getDatastoreSearchResult(apiConfig, resourceId, 0, 0);
 
             String createTableQuery = prepareCreateTableQuery(config, tableMetadata);
             LOG.debug("Table create query: {}", createTableQuery);
@@ -115,7 +118,7 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
             int offset = 0;
             while (!ctx.canceled() && recordsRemain) {
                 LOG.debug("requesting record from {0} to {1}", offset, (offset + REQUEST_RECORD_LIMIT - 1));
-                DatastoreSearchResult result = RelationalFromCkanHelper.getDatastoreSearchResult(apiConfig, resourceId, REQUEST_RECORD_LIMIT, offset);
+                DatastoreSearchResult result = new RelationalFromCkanHelper(ctx).getDatastoreSearchResult(apiConfig, resourceId, REQUEST_RECORD_LIMIT, offset);
                 String insertIntoQuery = prepareInsertIntoQuery(config, result);
                 LOG.debug("Insert into query: {}", insertIntoQuery);
                 DatabaseHelper.executeUpdate(insertIntoQuery, relationalOutput);
@@ -130,8 +133,8 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
             this.context.sendMessage(MessageType.ERROR, errMsg, e.getMessage());
         }
     }
-
-    protected static String prepareInsertIntoQuery(RelationalFromCkanConfig_V1 config, DatastoreSearchResult result) {
+    
+    protected static String prepareInsertIntoQuery(RelationalFromCkanConfig_V2 config, DatastoreSearchResult result) {
         StringBuilder sb = new StringBuilder();
 
         List<String> columnNames = result.getFieldList();
@@ -149,7 +152,7 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V1>
         return sb.toString();
     }
 
-    protected static String prepareCreateTableQuery(RelationalFromCkanConfig_V1 config, DatastoreSearchResult tableMetadata) {
+    protected static String prepareCreateTableQuery(RelationalFromCkanConfig_V2 config, DatastoreSearchResult tableMetadata) {
         // inspired by TabularToRelational
 
         StringBuilder sb = new StringBuilder();

@@ -32,6 +32,8 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eu.unifiedviews.helpers.dpu.context.UserContext;
+
 
 public class RelationalFromCkanHelper {
     
@@ -60,7 +62,13 @@ public class RelationalFromCkanHelper {
     
     private static final String API_TABLE_METADATA = "_table_metadata";
 
+    private UserContext ctx; // only for i18n
+
     
+    public RelationalFromCkanHelper(UserContext ctx) {
+        this.ctx = ctx;
+    }
+
     public static JsonObject buildJSON(Map<String, Object> values) {
         JsonBuilderFactory factory = Json.createBuilderFactory(Collections.<String, Object> emptyMap());
         JsonObjectBuilder builder = factory.createObjectBuilder();
@@ -85,7 +93,7 @@ public class RelationalFromCkanHelper {
      * @return
      * @throws Exception
      */
-    public static Organization getOrganization(CatalogApiConfig apiConfig, String orgId) throws Exception {
+    public Organization getOrganization(CatalogApiConfig apiConfig, String orgId) throws Exception {
         CloseableHttpClient client = HttpClients.createDefault();
         CloseableHttpResponse response = null;
         Map<String, String> additionalHttpHeaders = apiConfig.getAdditionalHttpHeaders();
@@ -130,7 +138,7 @@ public class RelationalFromCkanHelper {
         }
     }
     
-    public static List<Dataset> getPackageListWithResources(CatalogApiConfig apiConfig) throws Exception {
+    public List<Dataset> getPackageListWithResources(CatalogApiConfig apiConfig) throws Exception {
         List<Dataset> datasetsList = new ArrayList<Dataset>();
         
         CloseableHttpClient client = HttpClients.createDefault();
@@ -186,7 +194,7 @@ public class RelationalFromCkanHelper {
      * @return
      * @throws Exception
      */
-    public static Dataset getDataset(CatalogApiConfig apiConfig, String datasetIdOrName) throws Exception {
+    public Dataset getDataset(CatalogApiConfig apiConfig, String datasetIdOrName) throws Exception {
         CloseableHttpClient client = HttpClients.createDefault();
         CloseableHttpResponse response = null;
         Map<String, String> additionalHttpHeaders = apiConfig.getAdditionalHttpHeaders();
@@ -230,7 +238,7 @@ public class RelationalFromCkanHelper {
         }
     }
     
-    public static DatastoreSearchResult getDatastoreSearchResult(CatalogApiConfig apiConfig, String resourceId, int limit, int offset) throws Exception {
+    public DatastoreSearchResult getDatastoreSearchResult(CatalogApiConfig apiConfig, String resourceId, int limit, int offset) throws Exception {
         CloseableHttpClient client = HttpClients.createDefault();
         CloseableHttpResponse response = null;
         Map<String, String> additionalHttpHeaders = apiConfig.getAdditionalHttpHeaders();
@@ -278,13 +286,14 @@ public class RelationalFromCkanHelper {
         }
     }
     
-    private static void checkResponseSuccess(JsonObject responseJson) throws Exception {
+    private void checkResponseSuccess(JsonObject responseJson) throws Exception {
         boolean bSuccess = responseJson.getBoolean("success");
 
         if (!bSuccess) {
             String errorType = responseJson.getJsonObject("error").getString("__type");
             String errorMessage = responseJson.getJsonObject("error").getString("message");
-            throw new Exception(String.format("CKAN error response: [%s] %s", errorType, errorMessage));
+            String msg = ctx.tr("RelationalFromCkanHelper.error.response", errorMessage);
+            throw new Exception(msg);
         }
 
     }
@@ -320,7 +329,7 @@ public class RelationalFromCkanHelper {
         }
     }
     
-    public static Set<String> getDatastoreResourceIds(CatalogApiConfig apiConfig) throws Exception {
+    public Set<String> getDatastoreResourceIds(CatalogApiConfig apiConfig) throws Exception {
         Set<String> dsResIds = new HashSet<String>();
         
         String id;
