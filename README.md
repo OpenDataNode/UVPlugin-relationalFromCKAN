@@ -1,21 +1,11 @@
-# E-RelationalFromCKAN #
+E-RelationalFromCKAN
 ----------
 
-###General###
+### Documentation
 
-|                              |                                                               |
-|------------------------------|---------------------------------------------------------------|
-|**Name:**                     |E-RelationalFromCKAN                                           |
-|**Description:**              |Downloads relational data from CKAN datastore resource.        |
-|**Status:**                   |Supported in Plugins v2.1.X Updated to use Plugin-DevEnv v2.1.X |
-|                              |                                                               |
-|**DPU class name:**           |RelationalFromCKAN                                             | 
-|**Configuration class name:** |RelationalFromCKANConfig_V1                                    |
-|**Dialogue class name:**      |RelationalFromCKANVaadinDialog                                 | 
+Downloads relational data from CKAN datastore resource.
 
-***
-
-###Configuration parameters###
+### Configuration parameters
 
 |Parameter                        |Description                             |                                                        
 |---------------------------------|----------------------------------------|
@@ -23,32 +13,23 @@
 |org.opendatanode.CKAN.api.url      |URL to CKAN API internal_api, e.g. http://{host}/api/action/internal_api, has to be set in frontend.properties and backend.properties  |
 |org.opendatanode.CKAN.http.header.[key] | Custom HTTP header added to requests on CKAN |
 
-***
-
-### Inputs and outputs ###
+### Inputs and outputs
 
 |Name                |Type       |DataUnit                         |Description                        |
 |--------------------|-----------|---------------------------------|-----------------------------------|
 |output              |o          |RelationalDataUnit               |Downloaded relational data from CKAN datastore resource |
 
 
-***
+### Version history
 
-### Version history ###
+#### v1.1.0
+* GUI changes, added new checkbox for showing only 'my' (organization) datasets, i18n update
+* fixed bug: after selecting resource, it was not selected in tree after reopening config dialog
 
-|Version            |Release notes                                   |
-|-------------------|------------------------------------------------|
-|1.0.0              |N/A                                             |
-|1.0.1              |changed configuration parameter names and added one for http headers |
-|1.1.0              |GUI changes, added new checkbox for showing only 'my' (organization) datasets, i18n update|
-|                   |fixed bug: after selecting resource, it was not selected in tree after reopening config dialog|
+#### v1.0.0
+* Initial version
 
+### Developer's notes
 
-***
-
-### Developer's notes ###
-
-|Author            |Notes                 |
-|------------------|----------------------|
-|mvi               |dependent on ckanext-odn-pipeline v0.5.1+| 
-
+* dependent on ckanext-odn-pipeline v0.5.1+
+* The configuration parameters are needed in both frontend and backend configuration files, dependent on ckanext-odn-pipeline branch feature/edem
