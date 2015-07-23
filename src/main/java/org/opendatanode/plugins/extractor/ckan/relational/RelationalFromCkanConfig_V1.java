@@ -1,4 +1,4 @@
-package eu.unifiedviews.plugins.extractor.ckan.relational;
+package org.opendatanode.plugins.extractor.ckan.relational;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;

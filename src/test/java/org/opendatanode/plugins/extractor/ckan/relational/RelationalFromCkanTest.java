@@ -1,4 +1,4 @@
-package eu.unifiedviews.plugins.extractor.ckan.relational;
+package org.opendatanode.plugins.extractor.ckan.relational;
 
 import java.io.StringReader;
 import java.sql.Connection;
@@ -15,6 +15,9 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.opendatanode.plugins.extractor.ckan.relational.DatabaseHelper;
+import org.opendatanode.plugins.extractor.ckan.relational.DatastoreSearchResult;
+import org.opendatanode.plugins.extractor.ckan.relational.RelationalFromCkan;
 
 import cz.cuni.mff.xrg.odcs.dpu.test.TestEnvironment;
 import eu.unifiedviews.dataunit.relational.WritableRelationalDataUnit;

@@ -10,7 +10,7 @@
 		<relativePath></relativePath>
 	</parent>
 	
-	<groupId>eu.unifiedviews.plugins</groupId>
+	<groupId>org.opendatanode.plugins</groupId>
 	<artifactId>uv-e-relationalFromCKAN</artifactId>
 	
 	<name>E-RelationalFromCKAN</name>
@@ -18,16 +18,8 @@
 	<description>Exctractor of CKAN datastore resources</description>
 	<packaging>bundle</packaging>
 
-	<repositories>
-		<repository>
-			<id>maven.eea.sk</id>
-			<name>maven.eea.sk-public</name>
-			<url>http://maven.eea.sk/artifactory/public/</url>
-		</repository>
-	</repositories>
-
 	<properties>
-		<dpu.package>eu.unifiedviews.plugins.extractor.ckan.relational</dpu.package>
+		<dpu.package>org.opendatanode.plugins.extractor.ckan.relational</dpu.package>
 		<dpu.mainClass>RelationalFromCkan</dpu.mainClass>
 	</properties>
 
@@ -95,4 +87,12 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<repositories>
+		<repository>
+			<id>maven.eea.sk</id>
+			<name>maven.eea.sk-public</name>
+			<url>http://maven.eea.sk/artifactory/public/</url>
+		</repository>
+	</repositories>
+
 </project>

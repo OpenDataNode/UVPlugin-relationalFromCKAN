@@ -1,6 +1,7 @@
-package eu.unifiedviews.plugins.extractor.ckan.relational;
+package org.opendatanode.plugins.extractor.ckan.relational;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +52,7 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
     private String token = null;
     private String userExternalId = null;
 
+    private Map<String, String> additionalHttpHeaders = null;
     
     public RelationalFromCkanVaadinDialog() {
         super(RelationalFromCkan.class);
@@ -78,7 +80,15 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
         apiUrl = env.get(RelationalFromCkan.CONFIGURATION_CATALOG_API_LOCATION);
         token = env.get(RelationalFromCkan.CONFIGURATION_SECRET_TOKEN);
         userExternalId = this.getContext().getUserExternalId();
-        
+        additionalHttpHeaders = new HashMap<>();
+        for (Map.Entry<String, String> configEntry : env.entrySet()) {
+            if (configEntry.getKey().startsWith(RelationalFromCkan.CONFIGURATION_HTTP_HEADER)) {
+                String headerName = configEntry.getKey().replace(RelationalFromCkan.CONFIGURATION_HTTP_HEADER, "");
+                String headerValue = configEntry.getValue();
+                additionalHttpHeaders.put(headerName, headerValue);
+            }
+        }
+
         setSizeFull();
 //        final FormLayout mainLayout = new FormLayout();
         final VerticalLayout mainLayout = new VerticalLayout();
@@ -256,7 +266,7 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
     }
     
     private CatalogApiConfig getApiConfig() {
-        CatalogApiConfig apiConfig = new CatalogApiConfig(apiUrl, -1, userExternalId, token);
+        CatalogApiConfig apiConfig = new CatalogApiConfig(apiUrl, -1, userExternalId, token, additionalHttpHeaders);
         
         if (apiUrl == null || apiUrl.isEmpty()) {
             addLine(logs, ctx.tr("errors.api.missing", userExternalId), null);
