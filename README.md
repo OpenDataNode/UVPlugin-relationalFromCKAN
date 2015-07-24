@@ -3,33 +3,32 @@ E-RelationalFromCKAN
 
 ### Documentation
 
-Downloads relational data from CKAN datastore resource.
+* see [Plugin Documentation](./doc/About.md)
+* see [Plugin Documentation](./doc/About_sk.md) (in Slovak)
 
-### Configuration parameters
+### Technical notes
 
-|Parameter                        |Description                             |                                                        
-|---------------------------------|----------------------------------------|
-|org.opendatanode.CKAN.secret.token |Token used to authenticate to CKAN, has to be set in frontend.properties and backend.properties |
-|org.opendatanode.CKAN.api.url      |URL to CKAN API internal_api, e.g. http://{host}/api/action/internal_api, has to be set in frontend.properties and backend.properties  |
-|org.opendatanode.CKAN.http.header.[key] | Custom HTTP header added to requests on CKAN |
+* These properties have to be set in frontend.properties and backend.properties of UnifiedViews for correct functionality of DPU
 
-### Inputs and outputs
+| Property Name | Description |
+|:----|:----|
+`org.opendatanode.CKAN.secret.token` |Token used to authenticate to CKAN |
+`org.opendatanode.CKAN.api.url` | URL where CKAN api is located, has to be set in backend.properties |
+`org.opendatanode.CKAN.http.header.[key]` | Custom HTTP header added to requests on CKAN |
 
-|Name                |Type       |DataUnit                         |Description                        |
-|--------------------|-----------|---------------------------------|-----------------------------------|
-|output              |o          |RelationalDataUnit               |Downloaded relational data from CKAN datastore resource |
+Example:
 
-
-### Version history
-
-#### v1.1.0
-* GUI changes, added new checkbox for showing only 'my' (organization) datasets, i18n update
-* fixed bug: after selecting resource, it was not selected in tree after reopening config dialog
-
-#### v1.0.0
-* Initial version
-
-### Developer's notes
+```INI
+org.opendatanode.CKAN.secret.token = 12345678901234567890123456789012
+org.opendatanode.CKAN.api.url = ﻿http://localhost:9080/internalcatalog/api/action/internal_api
+org.opendatanode.CKAN.http.header.X-Forwarded-Host = www.myopendatanode.org
+org.opendatanode.CKAN.http.header.X-Forwarded-Proto = https
+```
 
 * dependent on ckanext-odn-pipeline v0.5.1+
 * The configuration parameters are needed in both frontend and backend configuration files, dependent on ckanext-odn-pipeline branch feature/edem
+
+### Version history
+
+* see[Changelog](./CHANGELOG.md)
+
