@@ -13,7 +13,7 @@ E-RelationalFromCKAN
 | Property Name | Description |
 |:----|:----|
 `org.opendatanode.CKAN.secret.token` |Token used to authenticate to CKAN |
-`org.opendatanode.CKAN.api.url` | URL where CKAN api is located, has to be set in backend.properties |
+`org.opendatanode.CKAN.api.url` | URL where CKAN api is located |
 `org.opendatanode.CKAN.http.header.[key]` | Custom HTTP header added to requests on CKAN |
 
 Example:
@@ -25,10 +25,9 @@ org.opendatanode.CKAN.http.header.X-Forwarded-Host = www.myopendatanode.org
 org.opendatanode.CKAN.http.header.X-Forwarded-Proto = https
 ```
 
-* dependent on ckanext-odn-pipeline v0.5.1+
-* The configuration parameters are needed in both frontend and backend configuration files, dependent on ckanext-odn-pipeline branch feature/edem
+* Dependent on ckanext-odn-pipeline v0.5.1+
 
 ### Version history
 
-* see[Changelog](./CHANGELOG.md)
+* see [Changelog](./CHANGELOG.md)
 
