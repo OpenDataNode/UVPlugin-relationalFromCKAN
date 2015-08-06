@@ -47,8 +47,7 @@ public class RelationalFromCkan extends AbstractDpu<RelationalFromCkanConfig_V2>
 
     public RelationalFromCkan() {
         super(RelationalFromCkanVaadinDialog.class,
-                ConfigHistory.history(RelationalFromCkanConfig_V2.class)
-                    .alternative(RelationalFromCkanConfig_V1.class)
+                ConfigHistory.history(RelationalFromCkanConfig_V1.class)
                     .addCurrent(RelationalFromCkanConfig_V2.class));
     }
 
