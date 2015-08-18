@@ -3,29 +3,31 @@ E-RelationalFromCKAN
 
 ### Documentation
 
-Downloads relational data from CKAN datastore resource.
+* see [Plugin Documentation](./doc/About.md)
+* see [Plugin Documentation](./doc/About_sk.md) (in Slovak)
 
-### Configuration parameters
+### Technical notes
 
-|Parameter                        |Description                             |                                                        
-|---------------------------------|----------------------------------------|
-|org.opendatanode.CKAN.secret.token  |authentication token |
-|org.opendatanode.CKAN.api.url       |URL to CKAN API internal_api, e.g. http://host/api/action/internal_api  |
+* These properties have to be set in frontend.properties and backend.properties of UnifiedViews for correct functionality of DPU
 
+| Property Name | Description |
+|:----|:----|
+`org.opendatanode.CKAN.secret.token` |Token used to authenticate to CKAN |
+`org.opendatanode.CKAN.api.url` | URL where CKAN api is located |
+`org.opendatanode.CKAN.http.header.[key]` | Custom HTTP header added to requests on CKAN |
 
-### Inputs and outputs
+Example:
 
-|Name                |Type       |DataUnit                         |Description                        |
-|--------------------|-----------|---------------------------------|-----------------------------------|
-|output              |o          |RelationalDataUnit               |Downloaded relational data from CKAN datastore resource |
+```INI
+org.opendatanode.CKAN.secret.token = 12345678901234567890123456789012
+org.opendatanode.CKAN.api.url = ﻿http://localhost:9080/internalcatalog/api/action/internal_api
+org.opendatanode.CKAN.http.header.X-Forwarded-Host = www.myopendatanode.org
+org.opendatanode.CKAN.http.header.X-Forwarded-Proto = https
+```
 
+* Dependent on ckanext-odn-pipeline v0.5.1+
 
 ### Version history
 
-#### v1.0.0
-* Initial version
+* see [Changelog](./CHANGELOG.md)
 
-
-### Developer's notes
-
-The configuration parameters are needed in both frontend and backend configuration files, dependent on ckanext-odn-pipeline branch feature/edem

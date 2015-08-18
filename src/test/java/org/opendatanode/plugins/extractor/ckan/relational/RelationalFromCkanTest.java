@@ -28,12 +28,12 @@ public class RelationalFromCkanTest {
     
     private TestEnvironment env;
     private WritableRelationalDataUnit output;
-    private RelationalFromCkanConfig_V1 config;
+    private RelationalFromCkanConfig_V2 config;
     
     @Before
     public void before() throws Exception {
         
-        config = new RelationalFromCkanConfig_V1();
+        config = new RelationalFromCkanConfig_V2();
         config.setTableName("test");
         
         env = new TestEnvironment();
@@ -113,4 +113,5 @@ public class RelationalFromCkanTest {
             }
         }
     }
+
 }
