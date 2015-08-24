@@ -1,6 +1,10 @@
 E-RelationalFromCKAN
 ----------
 
+v1.1.1
+---
+* Improved documentation (About)
+
 v1.1.0
 ---
 * GUI changes, added new checkbox for showing only 'my' (organization) datasets, i18n update
