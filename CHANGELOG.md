@@ -1,6 +1,10 @@
 E-RelationalFromCKAN
 ----------
 
+v1.1.2-SNAPSHOT
+---
+* Update to API 2.1.3
+
 v1.1.1
 ---
 * Improved documentation (About)
