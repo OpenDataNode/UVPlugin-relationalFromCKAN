@@ -61,6 +61,11 @@ public class RelationalFromCkanHelper {
     private static final String API_ACTION_PCK_SHOW = "package_show";
     
     private static final String API_TABLE_METADATA = "_table_metadata";
+    /**
+     * WARN: 2.4.x API change its default value is false
+     */
+    private static final String PARAM_INCLUDE_DATASETS = "include_datasets";
+    private static final String PARAM_ID = "id";
 
     private UserContext ctx; // only for i18n
 
@@ -109,7 +114,8 @@ public class RelationalFromCkanHelper {
             httpPost.setConfig(RequestConfig.custom().setConnectTimeout(CONNECT_TIMEOUT).build());
             
             Map<String, Object> values = new HashMap<String, Object>(2);
-            values.put("id", orgId);
+            values.put(PARAM_ID, orgId);
+            values.put(PARAM_INCLUDE_DATASETS, true);
             String data = buildJSON(values).toString();
             
             HttpEntity entity = MultipartEntityBuilder.create()
@@ -131,10 +137,36 @@ public class RelationalFromCkanHelper {
             checkResponseSuccess(responseJson);
 
             JsonObject orgInfo = responseJson.getJsonObject("result");
-            return new Organization(orgInfo);
+            final Organization org = new Organization(orgInfo);
+            
+            loadResources(apiConfig, org);
+            
+            return org;
         } finally {
             RelationalFromCkanHelper.tryCloseHttpResponse(response);
             RelationalFromCkanHelper.tryCloseHttpClient(client);
+        }
+    }
+    
+    /**
+     * Checks if resources were returned by organization_show API call
+     * <br/><br/>
+     * There was a change in CKAN API from version 2.2.x to 2.3<br/>
+     * In version 2.3 it no longer returns dataset resources
+     * 
+     * @param apiConfig
+     * @param org
+     * @throws Exception
+     */
+    private void loadResources(CatalogApiConfig apiConfig, Organization org) throws Exception {
+        Dataset act_dataset;
+        boolean resourcesNotLoaded = false;
+        for (Dataset dataset : org.datasets) {
+            resourcesNotLoaded = dataset.numOfResources > dataset.resources.size();
+            if (resourcesNotLoaded) {
+                act_dataset = getDataset(apiConfig, dataset.id);
+                dataset.resources = act_dataset.resources;
+            }
         }
     }
     
@@ -210,7 +242,7 @@ public class RelationalFromCkanHelper {
             httpPost.setConfig(RequestConfig.custom().setConnectTimeout(CONNECT_TIMEOUT).build());
             
             Map<String, Object> values = new HashMap<String, Object>(2);
-            values.put("id", datasetIdOrName);
+            values.put(PARAM_ID, datasetIdOrName);
             String data = buildJSON(values).toString();
             
             HttpEntity entity = MultipartEntityBuilder.create()
