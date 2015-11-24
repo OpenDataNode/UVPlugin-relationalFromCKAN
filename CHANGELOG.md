@@ -1,6 +1,10 @@
 E-RelationalFromCKAN
 ----------
 
+v1.1.4
+---
+* fixed: DPU won't load my organization datasets [#8]
+
 v1.1.3
 ---
 * Update to API 2.1.4
