@@ -13,9 +13,11 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.Container.Filter;
+import com.vaadin.data.Container.Sortable;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.HierarchicalContainer;
+import com.vaadin.data.util.ItemSorter;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.filter.SimpleStringFilter;
 import com.vaadin.event.FieldEvents;
@@ -142,6 +144,25 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
         datasetResourceTree.setItemCaptionMode(ItemCaptionMode.PROPERTY);
         datasetResourceTree.setItemCaptionPropertyId("caption");
         datasetResourceTree.addContainerProperty("caption", String.class, "");
+        
+        // sort alphabetically asc 
+        ((HierarchicalContainer) datasetResourceTree.getContainerDataSource()).setItemSorter(new ItemSorter() {
+            
+            @Override
+            public void setSortProperties(Sortable container, Object[] propertyId, boolean[] ascending) {
+            }
+            
+            @Override
+            public int compare(Object itemId1, Object itemId2) {
+                if (itemId1 instanceof CkanTreeItem && itemId2 instanceof CkanTreeItem) {
+                    String i1 = ((CkanTreeItem) itemId1).toString().toLowerCase();
+                    String i2 = ((CkanTreeItem) itemId2).toString().toLowerCase();
+                    
+                    return i1.compareTo(i2);
+                }
+                return 0;
+            }
+        });
 
         // tree item tooltip generator
         datasetResourceTree.setItemDescriptionGenerator(new ItemDescriptionGenerator() {
@@ -362,11 +383,12 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
     }
 
     private void fillTree() {
-        
         addMyOrgDatasets();
         if (!showOnlyMyDatasets.getValue()) {
             addPublicDatasets();
         }
+        // start sorting after the tree is filled
+        ((HierarchicalContainer)datasetResourceTree.getContainerDataSource()).sort(null, null);
     }
 
     private void loadData() {
