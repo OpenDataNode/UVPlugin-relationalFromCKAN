@@ -80,6 +80,8 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
     private Collator collator;
 
     private static final String CONFIGURATION_LOCALE = "locale";
+    
+    private static final String CAPTION_ITEM_PROPERTY = "caption";
 
     public RelationalFromCkanVaadinDialog() {
         super(RelationalFromCkan.class);
@@ -154,8 +156,8 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
         // setting up for filtering
         datasetResourceTree.setMultiSelect(false);
         datasetResourceTree.setItemCaptionMode(ItemCaptionMode.PROPERTY);
-        datasetResourceTree.setItemCaptionPropertyId("caption");
-        datasetResourceTree.addContainerProperty("caption", String.class, "");
+        datasetResourceTree.setItemCaptionPropertyId(CAPTION_ITEM_PROPERTY);
+        datasetResourceTree.addContainerProperty(CAPTION_ITEM_PROPERTY, String.class, "");
 
         // sort alphabetically asc 
         ((HierarchicalContainer) datasetResourceTree.getContainerDataSource()).setItemSorter(new ItemSorter() {
@@ -212,7 +214,7 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
                 ds.removeAllContainerFilters();
 
                 if (!filterText.isEmpty()) {
-                    SimpleStringFilter filter = new SimpleStringFilter("caption", event.getText(), true, false);
+                    SimpleStringFilter filter = new SimpleStringFilter(CAPTION_ITEM_PROPERTY, event.getText(), true, false);
                     ds.addContainerFilter(filter);
                 }
             }
@@ -483,7 +485,13 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
     private void addTreeItem(CkanTreeItem item, CkanTreeItem parent, boolean childrenAllowed) {
 
         // adding item and property for filtering
-        datasetResourceTree.addItem(item).getItemProperty("caption").setValue(item.toString());
+        Item addedItem = datasetResourceTree.addItem(item);
+        if (addedItem == null) { // item is already in the tree
+        	LOG.warn("Item '" + item + "' (id=" + item.getId() + ") is already in the tree. (Parent=" + parent + ")");
+        	return;
+		}
+        
+        addedItem.getItemProperty(CAPTION_ITEM_PROPERTY).setValue(item.toString());
         datasetResourceTree.setChildrenAllowed(item, childrenAllowed);
 
         if (item instanceof Dataset) {
@@ -505,7 +513,7 @@ public class RelationalFromCkanVaadinDialog extends AbstractDialog<RelationalFro
 
         Item orgItem = tree.getItem(orgItemId);
         if (orgItem == null) {
-            tree.addItem(orgItemId).getItemProperty("caption").setValue(orgItemId.toString());
+            tree.addItem(orgItemId).getItemProperty(CAPTION_ITEM_PROPERTY).setValue(orgItemId.toString());
         }
 
         tree.setParent(dataset, orgItemId);

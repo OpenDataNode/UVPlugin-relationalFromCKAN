@@ -4,7 +4,7 @@ import javax.json.JsonObject;
 
 public class Resource implements CkanTreeItem {
     
-    public String packageId; // not necessary ?
+    public String packageId;
     public String id;
     public String name;
     public String description;
@@ -57,28 +57,34 @@ public class Resource implements CkanTreeItem {
         return description;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((packageId == null) ? 0 : packageId.hashCode());
+		return result;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Resource other = (Resource) obj;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        return true;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Resource other = (Resource) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (packageId == null) {
+			if (other.packageId != null)
+				return false;
+		} else if (!packageId.equals(other.packageId))
+			return false;
+		return true;
+	}
 }

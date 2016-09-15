@@ -12,7 +12,7 @@
     <artifactId>uv-e-relationalFromCKAN</artifactId>
 
     <name>E-RelationalFromCKAN</name>
-    <version>1.1.5</version>
+    <version>1.1.6</version>
     <description>Exctractor of CKAN datastore resources</description>
     <packaging>bundle</packaging>
 

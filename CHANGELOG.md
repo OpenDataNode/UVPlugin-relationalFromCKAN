@@ -1,6 +1,10 @@
 E-RelationalFromCKAN
 ----------
 
+v1.1.6
+---
+* fixed: UI error caused by resources of different datasets having the same ID
+
 v1.1.5
 ---
 * fixed: CKAN resources list in DPU configuration dialog is alphabetically ordered now
