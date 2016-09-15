@@ -1,7 +1,7 @@
 E-RelationalFromCKAN
 ----------
 
-v1.1.6-SNAPSHOT
+v1.1.6
 ---
 * fixed: UI error caused by resources of different datasets having the same ID
 
